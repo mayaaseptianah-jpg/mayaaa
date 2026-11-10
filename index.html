@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Water Management — Pemerintah Kota Pagar Alam</title>
+  
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS CDN Standalone -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            govblue: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+              800: '#1E40AF',
+              900: '#1E3A8A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet GIS Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Custom Design System Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+
+  <div class="flex-1 flex overflow-hidden">
+    <!-- ================================================================= -->
+    <!-- 1. SIDEBAR DESKTOP & MOBILE DRAWER (SKILL.md Bab 5.1 Lebar ~320px) -->
+    <!-- ================================================================= -->
+    <aside id="sidebar-drawer" class="fixed inset-y-0 left-0 z-40 w-72 md:w-80 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-300 transform -translate-x-full md:translate-x-0 md:static shadow-sm md:shadow-none">
+      
+      <!-- Bagian Atas Sidebar: Logo & Identitas Lembaga -->
+      <div>
+        <!-- Area Identitas Resmi Pemerintah Kota Pagar Alam & Teknokrat -->
+        <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+          <div class="flex items-center gap-3">
+            <!-- Logo Resmi Pemkot Pagar Alam -->
+            <div class="w-12 h-14 flex-shrink-0 flex items-center justify-center bg-white rounded p-0.5 border border-slate-200/60 shadow-xs" title="Pemerintah Kota Pagar Alam">
+              <img src="assets/images/logo_pagaralam.jpg" alt="Logo Pemkot Pagar Alam" class="max-h-12 w-auto object-contain">
+            </div>
+            <!-- Logo Resmi Universitas Teknokrat Indonesia -->
+            <div class="w-12 h-14 flex-shrink-0 flex items-center justify-center bg-white rounded p-0.5 border border-slate-200/60 shadow-xs" title="Universitas Teknokrat Indonesia">
+              <img src="assets/images/logo_teknokrat.png" alt="Logo Teknokrat" class="max-h-12 w-auto object-contain">
+            </div>
+            <div class="overflow-hidden">
+              <h2 class="text-xs font-extrabold text-blue-900 tracking-wider uppercase">Pemerintah Kota</h2>
+              <h1 class="text-sm font-extrabold text-slate-900 truncate">PAGAR ALAM</h1>
+              <p class="text-[10px] text-slate-500 font-medium truncate">Dinas PUPR — UPTD Air Bersih</p>
+            </div>
+          </div>
+
+          <!-- Nama Aplikasi & Slogan Resmi -->
+          <div class="mt-4 pt-3 border-t border-slate-200/60">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-slate-900 tracking-tight">Smart Water Management</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">v1.0 MVP</span>
+            </div>
+            <p class="text-[11px] text-blue-700 font-semibold italic mt-0.5">
+              “Air Terpantau, Pengelolaan Lebih Baik”
+            </p>
+          </div>
+
+          <!-- Status Sinkronisasi SCADA UPTD -->
+          <div class="mt-3 flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-800 font-medium">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              SCADA UPTD Online
+            </span>
+            <span class="font-mono text-[10px] text-emerald-700">100% Aktif</span>
+          </div>
+        </div>
+
+        <!-- 5 Menu Navigasi Utama Sesuai SKILL.md Bab 5.1 -->
+        <nav class="p-3 space-y-1 text-xs">
+          <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Modul Operasional
+          </div>
+
+          <!-- Menu 1: Ringkasan Eksekutif & Peta Distribusi -->
+          <button onclick="window.store.setTab('overview')" data-tab="overview" class="nav-item active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 text-left font-medium">
+            <span class="material-symbols-outlined text-[19px]">map</span>
+            <span class="truncate">Ringkasan & Peta Distribusi</span>
+          </button>
+
+          <!-- Menu 2: Monitoring Kualitas Air & Telemetri Sensor -->
+          <button onclick="window.store.setTab('quality')" data-tab="quality" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 text-left font-medium">
+            <span class="material-symbols-outlined text-[19px]">biotech</span>
+            <span class="truncate">Kualitas Air & Telemetri Sensor</span>
+          </button>
+
+          <!-- Menu 3: Manajemen Pengaduan & Laporan Warga -->
+          <button onclick="window.store.setTab('complaints')" data-tab="complaints" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 text-left font-medium">
+            <span class="material-symbols-outlined text-[19px]">report_problem</span>
+            <span class="truncate">Pengaduan & Laporan Warga</span>
+          </button>
+
+          <!-- Menu 4: Analisis Konsumsi & Zona Wilayah -->
+          <button onclick="window.store.setTab('consumption')" data-tab="consumption" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 text-left font-medium">
+            <span class="material-symbols-outlined text-[19px]">insights</span>
+            <span class="truncate">Analisis Konsumsi & Wilayah</span>
+          </button>
+
+          <!-- Menu 5: Jadwal Pemeliharaan & Status Pompa -->
+          <button onclick="window.store.setTab('maintenance')" data-tab="maintenance" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 text-left font-medium">
+            <span class="material-symbols-outlined text-[19px]">water_pump</span>
+            <span class="truncate">Jadwal Pemeliharaan & Pompa</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bagian Bawah Sidebar: Profil Mahasiswa Pengembang & Akademik -->
+      <div class="p-4 border-t border-slate-100 bg-slate-50/80 text-[11px] text-slate-500">
+        <div class="font-bold text-slate-800">Maya Septianah</div>
+        <div class="text-[10px] text-slate-500">Sistem Informasi — Univ. Teknokrat Indonesia</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Dosen: Dr. Erliyan Redy Susanto, M.Kom.</div>
+        
+        <div class="mt-3 pt-2 border-t border-slate-200 flex items-center justify-between text-[10px]">
+          <span class="text-slate-400">Command Center</span>
+          <button onclick="window.store.resetToFactory()" class="text-rose-600 hover:underline" title="Kembalikan data ke awal">
+            Reset Data
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Overlay Latar Mobile Drawer -->
+    <div onclick="window.App.closeMobileDrawer()" id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/40 z-30 hidden md:hidden"></div>
+
+    <!-- ================================================================= -->
+    <!-- 2. AREA KONTEN UTAMA & HEADER (SKILL.md Bab 5.2 - 5.4)            -->
+    <!-- ================================================================= -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      
+      <!-- Topbar Header -->
+      <header class="bg-white border-b border-slate-200 sticky top-0 z-20 px-4 md:px-8 py-3 flex items-center justify-between gap-4 shadow-xs">
+        
+        <!-- Sisi Kiri: Tombol Hamburger Mobile & Pencarian Cepat -->
+        <div class="flex items-center gap-3 flex-1 max-w-lg">
+          <button onclick="window.App.toggleMobileDrawer()" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+
+          <!-- Input Pencarian Cepat Global -->
+          <div onclick="window.App.openGlobalSearch()" class="cursor-pointer w-full flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/70 text-slate-500 text-xs transition border border-transparent hover:border-slate-300">
+            <span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+            <span class="flex-1 truncate">Cari wilayah, tiket aduan, sensor, atau pompa...</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white text-slate-400 border border-slate-200 hidden sm:inline">Ctrl+K</span>
+          </div>
+        </div>
+
+        <!-- Sisi Kanan: Role Switcher Interaktif, Notifikasi & Profil -->
+        <div class="flex items-center gap-3">
+          
+          <!-- Fitur Penting: Role Switcher Interaktif untuk Pengujian -->
+          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs">
+            <span class="text-[11px] font-semibold text-slate-500 pl-1.5 hidden sm:inline">Peran:</span>
+            <select id="header-role-selector" onchange="window.App.handleRoleChange(this)" class="bg-white border border-slate-200 text-xs font-semibold rounded px-2 py-1 text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer">
+              <option value="petugas">Petugas UPTD Air Bersih</option>
+              <option value="admin">Admin Command Center</option>
+              <option value="masyarakat">Masyarakat (Pelanggan)</option>
+            </select>
+            <span id="role-indicator-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
+              PETUGAS
+            </span>
+          </div>
+
+          <!-- Tombol Notifikasi Dinamis dengan Badge -->
+          <div class="relative">
+            <button onclick="window.App.toggleNotifications()" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 relative">
+              <span class="material-symbols-outlined text-xl">notifications</span>
+              <span id="notif-badge-count" class="hidden absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
+                2
+              </span>
+            </button>
+
+            <!-- Dropdown Notifikasi -->
+            <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div class="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                <span class="font-bold text-xs text-slate-900">Notifikasi Sistem</span>
+                <button onclick="window.App.markAllRead()" class="text-[11px] text-blue-600 hover:underline">
+                  Tandai Semua Dibaca
+                </button>
+              </div>
+              <div id="notification-list-container" class="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                <!-- Diisi via JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Profil Pengguna Ringkas (Klik untuk Buka Modal Akun & FR-01) -->
+          <div onclick="window.App.openProfileModal()" class="flex items-center gap-2 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg transition" title="Lihat Profil Akun & Simulasi Login (FR-01)">
+            <div class="w-8 h-8 rounded-full bg-blue-700 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+              M
+            </div>
+            <div class="hidden lg:block text-left">
+              <div id="header-user-name" class="text-xs font-bold text-slate-900 truncate max-w-[130px]">Maya Septianah</div>
+              <div id="header-user-role" class="text-[10px] text-slate-500 truncate max-w-[130px]">UPTD Air Bersih</div>
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- Main Module Body Container -->
+      <main id="main-module-container" class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <!-- Modul Halaman Aktif akan Dirender di Sini -->
+      </main>
+
+      <!-- Footer Standar Resmi SKILL.md Bab 5.4 -->
+      <footer class="bg-white border-t border-slate-200 py-4 px-4 md:px-8 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <img src="assets/images/logo_pagaralam.jpg" alt="Logo Pemkot Pagar Alam" class="h-6 w-auto object-contain">
+            <img src="assets/images/logo_teknokrat.png" alt="Logo Teknokrat" class="h-6 w-auto object-contain">
+            <div class="flex flex-wrap items-center gap-1.5 text-slate-600 font-medium text-left">
+              <span>Pemerintah Kota Pagar Alam</span>
+              <span>•</span>
+              <span>Dinas PUPR — UPTD Air Bersih</span>
+              <span>•</span>
+              <span>Smart City Command Center</span>
+              <span>•</span>
+              <span class="text-blue-800 font-semibold">Universitas Teknokrat Indonesia</span>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-400">
+            © 2026 Smart Water Management. Slogan: <i>“Air Terpantau, Pengelolaan Lebih Baik”</i>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Global Modal Container -->
+  <div id="global-modal-container"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts Application Engine -->
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/state.js"></script>
+  <script src="assets/js/components/overview.js"></script>
+  <script src="assets/js/components/quality.js"></script>
+  <script src="assets/js/components/complaints.js"></script>
+  <script src="assets/js/components/consumption.js"></script>
+  <script src="assets/js/components/maintenance.js"></script>
+  <script src="assets/js/app.js"></script>
+
+  <!-- Keyboard Shortcuts Helper -->
+  <script>
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        window.App.openGlobalSearch();
+      }
+    });
+  </script>
+</body>
+</html>
